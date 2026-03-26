@@ -1,1 +1,155 @@
+"""
+Modelo de dos períodos con inversión y gasto público
+=====================================================
+Economía pequeña y abierta  |  u(c) = ln(c)  |  f(k) = A·kᵅ
 
+Solución analítica
+------------------
+
+1. Inversión óptima
+   FOC respecto a k2:  f'(k2) + (1-δ) = 1 + r*
+   → α·A·k2^(α-1) = r* + δ
+   → k2* = (α·A / (r* + δ))^(1/(1-α))
+
+2. Riqueza de vida W
+   Combinando las dos restricciones de flujo para eliminar b2:
+   W = [y1 - g1 - i1] + [y2 + (1-δ)·k2* - g2] / (1 + r*)
+   con  i1 = k2* - (1-δ)·k1   e   yt = A·kt^α
+
+3. Consumo óptimo  (utilidad logarítmica + Euler)
+   Euler:  1/c1 = β(1+r*)·(1/c2)  ⟹  c2 = β(1+r*)·c1
+   Sustituyendo en la RPI:  c1·(1 + β) = W
+   → c1* = W / (1 + β)
+   → c2* = β(1 + r*)·c1*
+
+4. Activos externos y cuenta corriente
+   b2 = y1 - g1 - c1* - i1    (de la RC del período 1, con b1 = 0)
+   CA1 = b2
+
+5. Efecto analítico de g1 sobre CA1
+   CA1 = y1 - g1 - c1*(W(g1)) - i1
+   ∂CA1/∂g1 = -1 - ∂c1/∂g1
+             = -1 + 1/(1+β)          [pues ∂W/∂g1 = -1 y c1 = W/(1+β)]
+             = -β/(1+β)
+"""
+
+import numpy as np
+
+# ── Parámetros ────────────────────────────────────────────────────────────────
+A      = 1.0    # productividad total de los factores
+alpha  = 0.3    # elasticidad del capital en la producción
+delta  = 0.1    # tasa de depreciación
+r_star = 0.05   # tasa de interés internacional
+beta   = 0.95   # factor de descuento subjetivo
+k1     = 1.0    # capital inicial (dado por la historia)
+
+
+# ── Funciones auxiliares ──────────────────────────────────────────────────────
+
+def produccion(k):
+    """Función de producción Cobb-Douglas: f(k) = A·k^α."""
+    return A * k**alpha
+
+
+def capital_optimo():
+    """
+    Resuelve la CPO de inversión:  α·A·k2^(α-1) + (1-δ) = 1 + r*
+    Forma cerrada:  k2* = (α·A / (r* + δ))^(1/(1-α))
+    """
+    return (alpha * A / (r_star + delta)) ** (1.0 / (1.0 - alpha))
+
+
+def resolver(g1, g2):
+    """
+    Calcula el equilibrio del modelo dados g1 y g2.
+    Devuelve un diccionario con todas las variables endógenas.
+    """
+    # 1. Capital e inversión óptimos (independientes de β, g1, g2)
+    k2 = capital_optimo()
+    i1 = k2 - (1 - delta) * k1
+
+    # 2. Producción en cada período
+    y1 = produccion(k1)
+    y2 = produccion(k2)
+
+    # 3. Riqueza de vida (RPI derivada de las dos restricciones de flujo)
+    W = (y1 - g1 - i1) + (y2 + (1 - delta) * k2 - g2) / (1 + r_star)
+
+    # 4. Consumo óptimo: Euler (c2 = β(1+r*)c1) + RPI (c1(1+β) = W)
+    c1 = W / (1 + beta)
+    c2 = beta * (1 + r_star) * c1
+
+    # 5. Activos externos netos y cuenta corriente
+    b2  = y1 - g1 - c1 - i1
+    CA1 = b2                       # coincide con b2 - b1, con b1 = 0
+
+    # 6. Verificación interna: RC del período 2
+    c2_rc2 = y2 + (1 - delta) * k2 + (1 + r_star) * b2 - g2
+    assert abs(c2 - c2_rc2) < 1e-10, "Error: c2 no satisface la RC del período 2."
+
+    return dict(k2=k2, i1=i1, y1=y1, y2=y2, W=W, c1=c1, c2=c2, b2=b2, CA1=CA1)
+
+
+def imprimir_resultados(res, g1, g2):
+    sep = "─" * 52
+    print(f"\n{'═'*52}")
+    print(f"  Caso base:  g₁ = {g1:.2f},  g₂ = {g2:.2f}")
+    print(f"{'═'*52}")
+
+    print(f"\n  {sep}")
+    print(f"  {'DECISIÓN DE INVERSIÓN':^48}")
+    print(f"  {sep}")
+    print(f"  Capital óptimo     k₂*  = {res['k2']:>10.6f}")
+    print(f"  Inversión bruta    i₁   = {res['i1']:>10.6f}")
+
+    print(f"\n  {sep}")
+    print(f"  {'PRODUCCIÓN':^48}")
+    print(f"  {sep}")
+    print(f"  Producción período 1  y₁ = {res['y1']:>10.6f}")
+    print(f"  Producción período 2  y₂ = {res['y2']:>10.6f}")
+
+    print(f"\n  {sep}")
+    print(f"  {'CONSUMO ÓPTIMO':^48}")
+    print(f"  {sep}")
+    print(f"  Riqueza de vida    W    = {res['W']:>10.6f}")
+    print(f"  Consumo período 1  c₁*  = {res['c1']:>10.6f}")
+    print(f"  Consumo período 2  c₂*  = {res['c2']:>10.6f}")
+    print(f"  Ratio c₂*/c₁*           = {res['c2']/res['c1']:>10.6f}  "
+          f"[= β(1+r*) = {beta*(1+r_star):.6f}  ✓]")
+
+    print(f"\n  {sep}")
+    print(f"  {'POSICIÓN EXTERNA Y CUENTA CORRIENTE':^48}")
+    print(f"  {sep}")
+    print(f"  Activos ext. netos  b₂  = {res['b2']:>10.6f}  "
+          f"({'acreedor' if res['b2']>0 else 'deudor'} neto)")
+    print(f"  Cuenta corriente   CA₁  = {res['CA1']:>10.6f}  "
+          f"({'superávit' if res['CA1']>0 else 'déficit'})")
+
+
+# ── Caso 1: g1 = 0.20 ────────────────────────────────────────────────────────
+g1_base, g2_base = 0.20, 0.10
+res1 = resolver(g1_base, g2_base)
+imprimir_resultados(res1, g1_base, g2_base)
+
+# ── Caso 2: g1 = 0.40 ────────────────────────────────────────────────────────
+g1_alto = 0.40
+res2 = resolver(g1_alto, g2_base)
+imprimir_resultados(res2, g1_alto, g2_base)
+
+# ── Comparación y verificación de la fórmula analítica ───────────────────────
+dg1          = g1_alto - g1_base
+dCA1         = res2["CA1"] - res1["CA1"]
+ratio_num    = dCA1 / dg1
+ratio_ana    = -beta / (1 + beta)   # ∂CA1/∂g1 = -β/(1+β)
+
+print(f"\n{'═'*52}")
+print(f"  EFECTO DE Δg₁ SOBRE LA CUENTA CORRIENTE")
+print(f"{'═'*52}")
+print(f"  ΔCA₁ (numérico)                = {dCA1:>10.6f}")
+print(f"  ΔCA₁/Δg₁ (numérico)           = {ratio_num:>10.6f}")
+print(f"  ∂CA₁/∂g₁ = -β/(1+β) (analít.) = {ratio_ana:>10.6f}")
+print(f"  Error absoluto                  = {abs(ratio_num - ratio_ana):.2e}  ✓")
+print(f"\n  Interpretación: por cada unidad adicional de gasto público")
+print(f"  temporal, la cuenta corriente se deteriora en β/(1+β) ≈ "
+      f"{-ratio_ana:.4f} unidades.")
+print(f"  El resto del ajuste (1/(1+β) ≈ {1/(1+beta):.4f}) recae sobre c₁.")
