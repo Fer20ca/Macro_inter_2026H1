@@ -1,0 +1,610 @@
+"""
+Universidad del Pacífico
+Macroeconomía Internacional 2026 I
+Instructor: Carlos Montoro
+EP: Alejandro Ventura y Fernando Condori
+"""
+=============================================================================
+ECONOMÍA ABIERTA DE TRES PERÍODOS  (y T períodos)
+=============================================================================
+
+Modelo
+------
+  • Horizonte: t ∈ {1, 2, 3}   (se generaliza a T períodos)
+  • Utilidad:  U = ln C1 + ln C2 + ln C3   (β = 1 implícito)
+  • Tasa mundial constante r* > 0, libre movilidad de capitales
+  • Sin gobierno ni inversión; único bien perecedero
+
+Solución analítica clave
+------------------------
+  Riqueza de vida:
+      W̄ = (1+r0)·B0  +  Q1  +  Q2/(1+r*)  +  Q3/(1+r*)²
+
+  Las condiciones de Euler con β=1 dan:   C_{t+1} = (1+r*) · C_t
+
+  Sustituyendo en la restricción presupuestaria intertemporal:
+      C1 + C1 + C1 = W̄   ⟹   C1 = W̄ / 3   (para T=3)
+      C1 = W̄ / T                              (para T general)
+
+  Condición de transversalidad (NPC):  B_T = 0
+
+Contenido del script
+--------------------
+  1. equilibrium()      Equilibrio para T = 3 períodos
+  2. equilibrium_T()    Generalización a T períodos arbitrarios
+  3. compute_shocks()   Calcula los efectos de shocks transitorios y permanentes
+  4. break_even_T()     Mínimo T tal que (ΔCA1^trans - ΔCA1^perm)/ΔQ > tol
+  5. print_results()    Presenta los resultados en consola
+  6. plot_results()     Gráficos de barras + convergencia
+  7. Bloque __main__    Ejecuta todo con los parámetros del enunciado
+
+Parámetros del enunciado (ítem i)
+----------------------------------
+  r* = 0.04,  r0 = 0.04,  B0 = 2,  Q = (3, 5, 4),  ΔQ = 0.6
+=============================================================================
+"""
+
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+from matplotlib.gridspec import GridSpec
+
+
+# =============================================================================
+# ESTILOS GLOBALES DE MATPLOTLIB
+# =============================================================================
+
+# Paleta de colores:  azul oscuro = transitorio,  terracota = permanente
+COLOR_BASE   = "#4A4A4A"   # gris  → equilibrio sin shock
+COLOR_TRANS  = "#2C5F8A"   # azul  → shock transitorio (solo Q1 sube)
+COLOR_PERM   = "#B5451B"   # rojo  → shock permanente  (todos Qt suben)
+
+plt.rcParams.update({
+    "font.family":      "serif",
+    "font.serif":       ["Georgia", "Times New Roman", "DejaVu Serif"],
+    "axes.spines.top":  False,
+    "axes.spines.right":False,
+    "axes.linewidth":   0.8,
+    "grid.alpha":       0.3,
+    "grid.linestyle":   "--",
+    "grid.linewidth":   0.6,
+    "xtick.direction":  "in",
+    "ytick.direction":  "in",
+    "figure.dpi":       150,
+})
+
+
+# =============================================================================
+# 1.  equilibrium()  —  modelo de 3 períodos
+# =============================================================================
+
+def equilibrium(B0: float, r0: float, Q: list, r_star: float) -> dict:
+    """
+    Calcula el equilibrio del hogar en una economía abierta de 3 períodos.
+
+    Pasos internos
+    --------------
+    1) Calcular la riqueza de vida W̄ (valor presente de todos los recursos).
+    2) Obtener C1 = W̄/3 y luego C2, C3 via condiciones de Euler.
+    3) Recuperar B1, B2, B3 de las restricciones de flujo de fondos.
+    4) Verificar que B3 ≈ 0 (condición NPC / transversalidad).
+    5) Calcular TB_t = Q_t − C_t  y  CA_t = TB_t + r*·B_{t-1}.
+
+    Parámetros
+    ----------
+    B0     : activos externos netos al cierre del período 0
+    r0     : tasa de interés del período 0 (se aplica sobre B0)
+    Q      : [Q1, Q2, Q3]  — dotaciones en cada período
+    r_star : tasa de interés mundial (constante)
+
+    Retorna
+    -------
+    dict con claves:
+        'C'     → array [C1, C2, C3]
+        'TB'    → array [TB1, TB2, TB3]
+        'CA'    → array [CA1, CA2, CA3]
+        'B'     → array [B1, B2, B3]
+        'W_bar' → escalar (riqueza de vida)
+    """
+
+    R = 1 + r_star   # factor de capitalización (más cómodo de escribir)
+
+    # ------------------------------------------------------------------
+    # PASO 1: Riqueza de vida
+    #   W̄ = riqueza_inicial + VP(dotaciones)
+    #   riqueza_inicial = (1+r0)·B0   ← B0 ya rinde intereses al inicio
+    # ------------------------------------------------------------------
+    riqueza_inicial = (1 + r0) * B0
+    VP_dotaciones   = Q[0] + Q[1]/R + Q[2]/R**2
+    W_bar = riqueza_inicial + VP_dotaciones
+
+    # ------------------------------------------------------------------
+    # PASO 2: Consumo óptimo
+    #   Euler: C2 = R·C1,  C3 = R·C2 = R²·C1
+    #   RPI:   C1 + C2/R + C3/R² = W̄
+    #          C1 + C1   + C1    = W̄   ← los R se cancelan
+    #          C1 = W̄ / 3
+    # ------------------------------------------------------------------
+    C1 = W_bar / 3
+    C2 = R * C1       # Euler adelante: consumo crece al ritmo de r*
+    C3 = R * C2       # ídem
+
+    # ------------------------------------------------------------------
+    # PASO 3: Posición de activos externos (flujo de fondos)
+    #   B_t = (1+r_{t-1})·B_{t-1} + Q_t − C_t
+    #   En t=1 la tasa sobre B0 es r0; en t≥2 es r*.
+    # ------------------------------------------------------------------
+    B1 = riqueza_inicial + Q[0] - C1   # =(1+r0)B0 + Q1 − C1
+    B2 = R * B1 + Q[1] - C2
+    B3 = R * B2 + Q[2] - C3           # debe ser ≈ 0
+
+    # ------------------------------------------------------------------
+    # PASO 4: Verificación numérica de la condición de transversalidad
+    # ------------------------------------------------------------------
+    if abs(B3) >= 1e-10:
+        raise ValueError(
+            f"¡NPC violada! B3 = {B3:.2e}. "
+            "Revisa los parámetros o la implementación."
+        )
+
+    # ------------------------------------------------------------------
+    # PASO 5: Balanza comercial y cuenta corriente
+    #   TB_t = Q_t − C_t
+    #   CA_t = TB_t + r*·B_{t-1}     (B_{t-1}: activos al INICIO del período t)
+    # ------------------------------------------------------------------
+    TB = np.array([Q[0] - C1,
+                   Q[1] - C2,
+                   Q[2] - C3])
+
+    CA = np.array([
+        TB[0] + r_star * B0,   # CA1: intereses sobre B0 (posición pre-período 1)
+        TB[1] + r_star * B1,   # CA2: intereses sobre B1
+        TB[2] + r_star * B2,   # CA3: intereses sobre B2
+    ])
+
+    return {
+        "C":     np.array([C1, C2, C3]),
+        "TB":    TB,
+        "CA":    CA,
+        "B":     np.array([B1, B2, B3]),
+        "W_bar": W_bar,
+    }
+
+
+# =============================================================================
+# 2.  equilibrium_T()  —  generalización a T períodos
+# =============================================================================
+
+def equilibrium_T(B0: float, r0: float, Q: list, r_star: float) -> dict:
+    """
+    Igual que equilibrium() pero para un horizonte de T períodos arbitrario.
+
+    La lógica es idéntica al caso T=3:
+        • Euler:  C_t = R^{t-1} · C1
+        • RPI:    C1·T = W̄   ⟹   C1 = W̄ / T
+        • B_t se calcula iterando las restricciones de flujo de fondos.
+        • Se verifica B_T ≈ 0.
+
+    Parámetros
+    ----------
+    B0, r0, r_star : iguales a equilibrium()
+    Q              : lista de longitud T  [Q1, Q2, …, QT]
+
+    Retorna
+    -------
+    dict con los mismos campos que equilibrium(), pero arrays de longitud T.
+    """
+
+    T = len(Q)
+    R = 1 + r_star
+
+    # Riqueza de vida: suma de valores presentes
+    riqueza_inicial = (1 + r0) * B0
+    VP_dotaciones   = sum(Q[t] / R**t for t in range(T))
+    W_bar = riqueza_inicial + VP_dotaciones
+
+    # Consumo óptimo: C1 = W̄/T; C_t crece al ritmo r* (Euler)
+    C1 = W_bar / T
+    C  = np.array([R**t * C1 for t in range(T)])   # t=0 → C1, t=1 → C2, …
+
+    # Posiciones de activos: iteración hacia adelante
+    B      = np.zeros(T)
+    B[0]   = riqueza_inicial + Q[0] - C[0]         # período 1: usa r0 sobre B0
+    for t in range(1, T):
+        B[t] = R * B[t-1] + Q[t] - C[t]
+
+    # Verificación NPC
+    if abs(B[-1]) >= 1e-10:
+        raise ValueError(f"¡NPC violada! B_T = {B[-1]:.2e}")
+
+    # Balanza comercial y cuenta corriente
+    TB     = np.array([Q[t] - C[t] for t in range(T)])
+    CA     = np.zeros(T)
+    CA[0]  = TB[0] + r_star * B0
+    for t in range(1, T):
+        CA[t] = TB[t] + r_star * B[t-1]
+
+    return {"C": C, "TB": TB, "CA": CA, "B": B, "W_bar": W_bar}
+
+
+# =============================================================================
+# 3.  compute_shocks()  —  efectos de shocks transitorios y permanentes
+# =============================================================================
+
+def compute_shocks(B0, r0, Q, r_star, dQ,
+                   use_T_periods=False) -> dict:
+    """
+    Dado un equilibrio base, calcula el impacto de dos tipos de shocks en t=1:
+
+    Shock TRANSITORIO: solo Q1 aumenta en dQ (Q2 y Q3 no cambian).
+    Shock PERMANENTE:  todos los Qt aumentan en dQ simultáneamente.
+
+    Parámetros
+    ----------
+    B0, r0, r_star : parámetros del modelo
+    Q              : dotaciones base (lista de longitud 3 o T)
+    dQ             : tamaño del shock
+    use_T_periods  : si True, usa equilibrium_T(); si False, usa equilibrium()
+
+    Retorna
+    -------
+    dict con subdiccionarios 'base', 'transitorio', 'permanente' y
+    arrays de deltas (ΔC, ΔTB, ΔCA) normalizados por dQ.
+    """
+
+    fn = equilibrium_T if use_T_periods else equilibrium
+
+    # Equilibrio sin shock
+    base = fn(B0, r0, Q, r_star)
+
+    # Shock transitorio: solo la dotación del primer período sube
+    Q_trans = list(Q)
+    Q_trans[0] = Q_trans[0] + dQ
+    trans = fn(B0, r0, Q_trans, r_star)
+
+    # Shock permanente: todas las dotaciones suben igual
+    Q_perm = [q + dQ for q in Q]
+    perm   = fn(B0, r0, Q_perm, r_star)
+
+    # Deltas en t=1 (primer elemento de cada array), normalizados por dQ
+    deltas = {
+        "dC1_trans":  (trans["C"][0]  - base["C"][0])  / dQ,
+        "dTB1_trans": (trans["TB"][0] - base["TB"][0]) / dQ,
+        "dCA1_trans": (trans["CA"][0] - base["CA"][0]) / dQ,
+        "dC1_perm":   (perm["C"][0]   - base["C"][0])  / dQ,
+        "dTB1_perm":  (perm["TB"][0]  - base["TB"][0]) / dQ,
+        "dCA1_perm":  (perm["CA"][0]  - base["CA"][0]) / dQ,
+    }
+
+    return {"base": base, "trans": trans, "perm": perm, "deltas": deltas}
+
+
+# =============================================================================
+# 4.  break_even_T()  —  mínimo T que supera el umbral de diferencia
+# =============================================================================
+
+def break_even_T(tol: float,
+                 r_star: float = 0.04,
+                 Q_base: float = 1.0,
+                 dQ:     float = 0.3) -> int:
+    """
+    Encuentra el mínimo T ≥ 2 tal que:
+        ΔCA1^trans/ΔQ  −  ΔCA1^perm/ΔQ  >  tol
+
+    Intuición: conforme T crece, el shock transitorio se diluye menos
+    (el consumo extra se reparte en más períodos) y la diferencia entre
+    ambos tipos de shock se hace más notoria.
+
+    Parámetros
+    ----------
+    tol    : umbral de diferencia deseado
+    r_star : tasa de interés mundial
+    Q_base : dotación uniforme de referencia
+    dQ     : tamaño del shock
+
+    Retorna
+    -------
+    T_min  : primer entero T donde la diferencia supera tol
+    """
+
+    for T in range(2, 10_001):
+        Q_vec   = [Q_base] * T
+        results = compute_shocks(0.0, r_star, Q_vec, r_star, dQ,
+                                 use_T_periods=True)
+        diff = results["deltas"]["dCA1_trans"] - results["deltas"]["dCA1_perm"]
+        if diff > tol:
+            return T
+
+    raise RuntimeError(f"No se encontró T_min ≤ 10 000 para tol={tol}.")
+
+
+# =============================================================================
+# 5.  print_results()  —  presentación en consola
+# =============================================================================
+
+def print_results(base: dict, shocks: dict, dQ: float) -> None:
+    """
+    Imprime en consola el equilibrio base, los shocks y la tabla de
+    convergencia de ΔCA1/ΔQ para distintos horizontes T.
+    """
+
+    trans   = shocks["trans"]
+    perm    = shocks["perm"]
+    deltas  = shocks["deltas"]
+
+    # ── Equilibrio base ───────────────────────────────────────────────────
+    print("=" * 62)
+    print("  MODELO DE ECONOMÍA ABIERTA — TRES PERÍODOS")
+    print("=" * 62)
+    print(f"\n{'EQUILIBRIO BASE':^62}")
+    print(f"  Riqueza de vida  W̄ = {base['W_bar']:.6f}\n")
+    print(f"  {'Período':<10} {'C_t':>10} {'TB_t':>10} {'CA_t':>10} {'B_t':>10}")
+    print("  " + "─" * 44)
+    for t in range(3):
+        print(f"  {'t = '+str(t+1):<10}"
+              f" {base['C'][t]:>10.6f}"
+              f" {base['TB'][t]:>10.6f}"
+              f" {base['CA'][t]:>10.6f}"
+              f" {base['B'][t]:>10.6f}")
+
+    print("""
+  Comentario sobre signos:
+  • TB1 < 0: en t=1 el hogar consume más de lo que produce
+    (importador neto de bienes presentes).
+  • CA1 = TB1 + r*·B0: el ingreso de inversiones modera el
+    déficit comercial cuando B0 > 0.
+  • El hogar ahorra anticipando que Q2 > Q1 (perfil creciente)
+    y se desahorra en t=3 cuando la dotación cae de nuevo.
+""")
+
+    # ── Shocks ────────────────────────────────────────────────────────────
+    print(f"{'EFECTOS DE LOS SHOCKS (ΔQ = ' + str(dQ) + ')':^62}\n")
+    print(f"  {'':25} {'Transitorio':>12}  {'Permanente':>12}  {'Analítico':>10}")
+    print("  " + "─" * 62)
+
+    filas = [
+        ("ΔC1 / ΔQ",  deltas['dC1_trans'],  deltas['dC1_perm'],
+         "1/3 → 1"),
+        ("ΔTB1 / ΔQ", deltas['dTB1_trans'], deltas['dTB1_perm'],
+         "2/3 → 0"),
+        ("ΔCA1 / ΔQ", deltas['dCA1_trans'], deltas['dCA1_perm'],
+         "2/3 → 0"),
+    ]
+    for nombre, val_t, val_p, analitico in filas:
+        print(f"  {nombre:<25} {val_t:>12.6f}  {val_p:>12.6f}  {analitico:>10}")
+
+    # ── Tabla de convergencia ─────────────────────────────────────────────
+    print(f"\n{'TABLA: ΔCA1/ΔQ SEGÚN EL HORIZONTE T':^62}")
+    print(f"  (dotaciones uniformes Q=1, ΔQ=0.3, B0=0, r*=0.04)\n")
+    print(f"  {'T':>5}  {'ΔCA1^trans/ΔQ':>14}  {'ΔCA1^perm/ΔQ':>13}  {'Diferencia':>12}")
+    print("  " + "─" * 50)
+
+    for T in [2, 3, 5, 10, 20, 50, 100]:
+        Q_vec   = [1.0] * T
+        res_T   = compute_shocks(0.0, 0.04, Q_vec, 0.04, 0.3,
+                                 use_T_periods=True)
+        d       = res_T["deltas"]
+        diff    = d["dCA1_trans"] - d["dCA1_perm"]
+        print(f"  {T:>5}  {d['dCA1_trans']:>14.6f}  {d['dCA1_perm']:>13.6f}  {diff:>12.6f}")
+
+    print()
+
+
+# =============================================================================
+# 6.  plot_results()  —  gráficos de barras + convergencia
+# =============================================================================
+
+def plot_results(base: dict, trans: dict, perm: dict,
+                 save_path: str = None) -> None:
+    """
+    Genera una figura con 5 paneles:
+
+    Fila superior  (3 paneles de barras agrupadas):
+        • Consumo C_t en los 3 períodos
+        • Balanza comercial TB_t
+        • Cuenta corriente CA_t
+
+    Fila inferior  (2 paneles):
+        • Deltas normalizados ΔX1/ΔQ en t=1 (barras)
+        • Convergencia ΔCA1/ΔQ vs T (líneas)
+    """
+
+    periodos  = ["t = 1", "t = 2", "t = 3"]
+    x         = np.arange(3)           # posiciones en el eje x
+    bw        = 0.26                   # ancho de cada barra
+
+    fig = plt.figure(figsize=(14, 8.5))
+    fig.patch.set_facecolor("#F8F8F6")
+
+    gs = GridSpec(2, 3, figure=fig,
+                  hspace=0.55, wspace=0.38,
+                  left=0.07, right=0.97, top=0.88, bottom=0.09)
+
+    axes = [fig.add_subplot(gs[0, j]) for j in range(3)] + \
+           [fig.add_subplot(gs[1, 0]),
+            fig.add_subplot(gs[1, 1:])]
+
+    # Configuración común para paneles de barras
+    def estilo_panel(ax, titulo, ylabel=""):
+        ax.set_facecolor("#F8F8F6")
+        ax.set_title(titulo, fontsize=9.5, pad=7, color="#1A1A1A")
+        ax.set_xticks(x)
+        ax.set_xticklabels(periodos, fontsize=8)
+        ax.set_ylabel(ylabel, fontsize=8, color="#555555")
+        ax.tick_params(labelsize=8)
+        ax.axhline(0, color="#AAAAAA", linewidth=0.8)
+        ax.grid(True, axis="y")
+        ax.yaxis.set_major_formatter(mticker.FormatStrFormatter("%.2f"))
+
+    def etiquetar_barras(ax, barras):
+        """Pone el valor numérico encima (o debajo) de cada barra."""
+        for bar in barras:
+            h  = bar.get_height()
+            va = "bottom" if h >= 0 else "top"
+            dy = 0.004 if h >= 0 else -0.004
+            ax.text(bar.get_x() + bar.get_width() / 2,
+                    h + dy, f"{h:.3f}",
+                    ha="center", va=va, fontsize=6.8, color="#333333")
+
+    # ── Paneles 0, 1, 2: C_t, TB_t, CA_t ─────────────────────────────────
+    configs = [
+        ("Consumo  $C_t$",          "C"),
+        ("Balanza comercial  $TB_t$","TB"),
+        ("Cuenta corriente  $CA_t$", "CA"),
+    ]
+    for j, (titulo, clave) in enumerate(configs):
+        ax = axes[j]
+        ax.set_facecolor("#F8F8F6")
+
+        # Tres grupos de barras: Base | Transitorio | Permanente
+        b_base  = ax.bar(x - bw, base[clave],  width=bw,
+                         color=COLOR_BASE,  alpha=0.80, label="Base")
+        b_trans = ax.bar(x,      trans[clave], width=bw,
+                         color=COLOR_TRANS, alpha=0.85, label="Transitorio")
+        b_perm  = ax.bar(x + bw, perm[clave],  width=bw,
+                         color=COLOR_PERM,  alpha=0.85, label="Permanente")
+
+        etiquetar_barras(ax, b_base)
+        etiquetar_barras(ax, b_trans)
+        etiquetar_barras(ax, b_perm)
+        estilo_panel(ax, titulo)
+
+        if j == 1: # La ponemos en el panel central para que quede simétrica
+            ax.legend(
+                fontsize=8, 
+                framealpha=0.8,
+                loc="upper center", 
+                bbox_to_anchor=(0.5, -0.18), # Se mueve hacia abajo del eje
+                ncol=3,                      # Horizontal para ahorrar espacio
+                handlelength=1.5
+            )
+
+    # ── Panel 3: deltas normalizados en t=1 ───────────────────────────────
+    ax3 = axes[3]
+    ax3.set_facecolor("#F8F8F6")
+
+    variables   = ["$\\Delta C_1/\\Delta Q$",
+                   "$\\Delta TB_1/\\Delta Q$",
+                   "$\\Delta CA_1/\\Delta Q$"]
+    xb          = np.arange(3)
+
+    # Los deltas ya están almacenados en compute_shocks() → usamos los arrays
+    vals_trans  = [
+        trans["C"][0]  - base["C"][0],
+        trans["TB"][0] - base["TB"][0],
+        trans["CA"][0] - base["CA"][0],
+    ]
+    vals_perm   = [
+        perm["C"][0]  - base["C"][0],
+        perm["TB"][0] - base["TB"][0],
+        perm["CA"][0] - base["CA"][0],
+    ]
+    # Normalizar por ΔQ  (recuperado de la diferencia en C1 y la teoría)
+    # Lo leemos directamente como ratio sobre (C1_trans - C1_base) / (1/3)
+    dQ_num = (trans["C"][0] - base["C"][0]) / (1/3)   # ΔQ implícito
+
+    vals_trans_n = [v / dQ_num for v in vals_trans]
+    vals_perm_n  = [v / dQ_num for v in vals_perm]
+
+    b_t3 = ax3.bar(xb - bw/2, vals_trans_n, width=bw,
+                   color=COLOR_TRANS, alpha=0.85, label="Transitorio")
+    b_p3 = ax3.bar(xb + bw/2, vals_perm_n,  width=bw,
+                   color=COLOR_PERM,  alpha=0.85, label="Permanente")
+
+    etiquetar_barras(ax3, b_t3)
+    etiquetar_barras(ax3, b_p3)
+
+    ax3.set_xticks(xb)
+    ax3.set_xticklabels(variables, fontsize=8)
+    ax3.set_title("Impacto en $t=1$  (fracción de $\\Delta Q$)",
+                  fontsize=9.5, pad=7, color="#1A1A1A")
+    ax3.axhline(0, color="#AAAAAA", linewidth=0.8)
+    ax3.grid(True, axis="y")
+    ax3.tick_params(labelsize=8)
+    ax3.legend(fontsize=7.5, framealpha=0.65, handlelength=1.6)
+    ax3.set_facecolor("#F8F8F6")
+
+    # ── Panel 4: convergencia ΔCA1/ΔQ vs T ────────────────────────────────
+    ax4 = axes[4]
+    ax4.set_facecolor("#F8F8F6")
+
+    T_fine    = list(range(2, 101))
+    rt_fine, rp_fine = [], []
+
+    for T in T_fine:
+        Q_vec = [1.0] * T
+        res   = compute_shocks(0.0, 0.04, Q_vec, 0.04, 0.3,
+                               use_T_periods=True)
+        rt_fine.append(res["deltas"]["dCA1_trans"])
+        rp_fine.append(res["deltas"]["dCA1_perm"])
+
+    ax4.plot(T_fine, rt_fine, color=COLOR_TRANS, linewidth=2.0,
+             label="Transitorio  $\\Delta CA_1^{\\mathrm{trans}}/\\Delta Q$")
+    ax4.plot(T_fine, rp_fine, color=COLOR_PERM,  linewidth=2.0,
+             label="Permanente  $\\Delta CA_1^{\\mathrm{perm}}/\\Delta Q$")
+
+    # Asíntotas teóricas cuando T → ∞
+    ax4.axhline(1, color=COLOR_TRANS, linewidth=0.9,
+                linestyle=":", alpha=0.55, label="Límite trans. = 1")
+    ax4.axhline(0, color=COLOR_PERM,  linewidth=0.9,
+                linestyle=":", alpha=0.55, label="Límite perm. = 0")
+
+    # Puntos de la tabla
+    T_tabla = [2, 3, 5, 10, 20, 50, 100]
+    rt_tab  = [rt_fine[T-2] for T in T_tabla]
+    rp_tab  = [rp_fine[T-2] for T in T_tabla]
+    ax4.scatter(T_tabla, rt_tab, color=COLOR_TRANS,
+                zorder=5, s=30, edgecolors="white", linewidth=0.6)
+    ax4.scatter(T_tabla, rp_tab, color=COLOR_PERM,
+                zorder=5, s=30, edgecolors="white", linewidth=0.6)
+
+    ax4.set_xlabel("Horizonte $T$", fontsize=8.5, color="#555555")
+    ax4.set_ylabel("$\\Delta CA_1 / \\Delta Q$", fontsize=8.5, color="#555555")
+    ax4.set_title("Convergencia de $\\Delta CA_1/\\Delta Q$ cuando $T \\to \\infty$",
+                  fontsize=9.5, pad=7, color="#1A1A1A")
+    ax4.legend(fontsize=7, framealpha=0.65, loc="center right",
+               handlelength=1.8, ncol=2)
+    ax4.tick_params(labelsize=8)
+    ax4.grid(True, axis="y")
+
+    # ── Título general ─────────────────────────────────────────────────────
+    fig.suptitle(
+        "Economía abierta de tres períodos — "
+        "Shocks transitorios vs. permanentes",
+        fontsize=12, y=0.94, color="#1A1A1A", style="italic"
+    )
+
+
+# =============================================================================
+# 7.  BLOQUE PRINCIPAL
+# =============================================================================
+
+if __name__ == "__main__":
+
+    # ── Parámetros del enunciado (ítem i) ─────────────────────────────────
+    r_star = 0.04
+    r0     = 0.04
+    B0     = 2.0
+    Q      = [3.0, 5.0, 4.0]
+    dQ     = 0.6
+
+    # ── Calcular equilibrio base ───────────────────────────────────────────
+    base = equilibrium(B0, r0, Q, r_star)
+
+    # ── Calcular shocks (transitorio y permanente) ─────────────────────────
+    shocks = compute_shocks(B0, r0, Q, r_star, dQ)
+    trans  = shocks["trans"]
+    perm   = shocks["perm"]
+
+    # ── Imprimir resultados en consola ─────────────────────────────────────
+    print_results(base, shocks, dQ)
+
+    # ── Break-even T ──────────────────────────────────────────────────────
+    tol   = 0.10
+    T_min = break_even_T(tol)
+    print(f"  Break-even T (tol = {tol}):  T_min = {T_min}\n")
+
+    # ── Gráficos ───────────────────────────────────────────────────────────
+    plot_results(
+        base, trans, perm
+    )
