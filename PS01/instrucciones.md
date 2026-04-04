@@ -140,7 +140,7 @@ git push origin PS01/grupoXX
 
 | | Fecha | Hora |
 |---|---|---|
-| **Entrega final** | **Doming 18 de abril de 2026** | **23:59 (hora de Lima, UTC−5)** |
+| **Entrega final** | **Sabado 18 de abril de 2026** | **23:59 (hora de Lima, UTC−5)** |
 
 - El *timestamp* del último commit en su rama antes de las 23:59 es lo que cuenta.
 - Los commits posteriores a la fecha límite **no serán considerados**, salvo autorización explícita de los encargados de práctica.
