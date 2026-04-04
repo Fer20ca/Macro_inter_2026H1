@@ -168,7 +168,7 @@ Cada grupo debe incluir un archivo `declaracion_IA.pdf` con el siguiente formato
 
 Si **no usaron IA**, igualmente incluyan el archivo con la declaracion: *"No se utilizo ninguna herramienta de IA para esta entrega."*
 
-### 5.2 Que esta bien y que no
+### 5.2 ¿Qué está bien y qué no?
 
 | Permitido | No permitido |
 |-----------|-------------|
