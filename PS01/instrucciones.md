@@ -1,8 +1,8 @@
-# Instrucciones de entrega del PS 01
+# Instrucciones de entrega — Problem Set 01
 
-## Macroeconomia Internacional | Semestre 2026-I
-## Instructor: Carlos Montoro
-## EP: Alejandro Ventura & Fernando Condori
+## Macroeconomía Internacional | Semestre 2026-I
+## Profesor: Carlos Montoro
+## Encargados de práctica: Alejandro Ventura & Fernando Condori
 
 ---
 
@@ -14,29 +14,66 @@ Cada grupo debe crear una carpeta con el siguiente nombre **exacto**:
 PS01_GrupoXX/
 ```
 
-donde `XX` es el numero de su grupo (01, 02, ..., 12, etc.).
+donde `XX` es el número de su grupo (01, 02, ..., 12, etc.).
 
 Dentro de esa carpeta, la estructura debe ser:
 
 ```
 PS01_GrupoXX/
 ├── codigo/
-│   ├── PS01_analisis.ipynb       # o .py / .R / .m
-│   ├── PS01_simulacion.ipynb     # o .py / .R / .m
-│   └── datos/                    # CSVs descargados o generados
-│       └── peru_trimestral.csv
+│   ├── PS01_analisis.ipynb          # Bloque A: descarga de datos y regularidades empíricas
+│   ├── PS01_simulacion.ipynb        # Bloque B: simulación y calibración
+│   └── datos/                       # Archivos CSV descargados o generados
 │       └── ...
 ├── entregable/
-│   ├── PS01_GrupoXX.pdf          # Documento principal con respuestas
-│   └── declaracion_IA.pdf        # Declaracion de uso de IA (ver seccion 5)
+│   ├── PS01_GrupoXX.pdf             # Documento principal con todas las respuestas
+│   └── declaracion_IA.pdf           # Declaración de uso de IA (ver sección 5)
 ├── video/
-│   └── PS01_GrupoXX_video.mp4    # Video de sustentacion (max 10 min)
-└── README.md                     # Breve descripcion de que contiene cada archivo
+│   └── PS01_GrupoXX_video.mp4       # Video de sustentación (máx. 10 min)
+└── README.md                        # Descripción breve del contenido de cada archivo
 ```
 
 ---
 
-## 2. Cómo subir al repositorio
+## 2. Entregables y formato de respuestas
+
+El *problem set* tiene cuatro entregables. Cada uno tiene requisitos específicos de formato que deben respetarse para que la entrega sea válida.
+
+### 2.1 Solución escrita (obligatorio)
+
+El archivo `PS01_GrupoXX.pdf` debe contener la solución de **todos y cada uno de los ítems** de las Partes I–V, en orden. Para que sea evaluable, tenga en cuenta lo siguiente:
+
+- **Orden:** las respuestas deben seguir estrictamente la numeración del enunciado (ítem 1, ítem 2, ..., ítem 48). No omita ningún ítem ni cambie el orden.
+- **Claridad:** cada respuesta debe comenzar indicando el número de ítem al que corresponde. Las derivaciones matemáticas deben presentarse paso a paso, con cada paso justificado. Las respuestas de interpretación deben ser párrafos completos, no listas de palabras sueltas.
+- **Gráficos:** todos los gráficos generados en código deben estar embebidos en el PDF, con título, etiquetas en los ejes y leyenda cuando corresponda. No se aceptan referencias a archivos externos.
+- **Formato:** únicamente se acepta **PDF**. No se aceptan archivos Word, LaTeX sin compilar ni ningún otro formato.
+
+### 2.2 Código (obligatorio)
+
+La carpeta `codigo/` debe contener los notebooks de Python con todo el código utilizado en la Parte V. El código debe:
+
+- Ser **reproducible**: cualquier encargado de práctica debe poder ejecutarlo de principio a fin y obtener exactamente los mismos resultados.
+- Estar **comentado**: cada bloque debe incluir comentarios que expliquen qué hace y por qué.
+- Incluir la **instalación de paquetes** al inicio de cada notebook:
+
+```python
+!pip install wbgapi statsmodels pandas matplotlib -q
+```
+
+- Usar los **nombres de variables exactos** especificados en la tabla de la Parte V.
+
+### 2.3 Video de sustentación (obligatorio)
+
+El video debe seguir la estructura detallada en la sección 9. Su duración máxima es de 10 minutos y debe estar en formato MP4.
+
+### 2.4 Declaración de IA (obligatorio)
+
+El archivo `declaracion_IA.pdf` debe completarse según el formato de la sección 7, independientemente de si se usó IA o no. El formato del archivo debe ser **PDF**.
+
+---
+
+## 4. Cómo subir al repositorio
+
 
 ### Paso 1: Clonar el repositorio (solo la primera vez)
 
@@ -55,17 +92,17 @@ git checkout -b PS01/grupoXX
 
 ### Paso 3: Agregar sus archivos
 
-Copien su carpeta `PS01_GrupoXX/` dentro del repositorio y luego:
+Copien su carpeta `PS01_GrupoXX/` dentro del repositorio y luego ejecuten:
 
 ```bash
 git add PS01_GrupoXX/
 git status    # verificar que se agregaron los archivos correctos
 ```
 
-**Importante:** Antes de hacer `add`, verifiquen que:
-- No estan subiendo archivos innecesarios (`.DS_Store`, `__pycache__`, `.ipynb_checkpoints`)
-- Los archivos pesados (videos) estan dentro del limite de GitHub (100 MB por archivo)
-- No estan subiendo credenciales, API keys, ni datos sensibles
+**Antes de hacer `add`, verifiquen que:**
+- No están subiendo archivos innecesarios (`.DS_Store`, `__pycache__`, `.ipynb_checkpoints`)
+- Los archivos de video están dentro del límite de GitHub (100 MB por archivo)
+- No están subiendo credenciales, claves de API ni datos sensibles
 
 ### Paso 4: Hacer commit
 
@@ -73,10 +110,10 @@ git status    # verificar que se agregaron los archivos correctos
 git commit -m "PS01 GrupoXX: entrega final"
 ```
 
-Si hacen correcciones despues, haganlas en commits separados con mensajes descriptivos:
+Si realizan correcciones posteriores, háganlas en commits separados con mensajes descriptivos:
 
 ```bash
-git commit -m "PS01 GrupoXX: correccion grafico pregunta (a)"
+git commit -m "PS01 GrupoXX: corrección gráfico ítem (38)"
 ```
 
 **No reescriban el historial** (`--amend`, `rebase`, `force push`). Queremos ver la trazabilidad de cambios.
@@ -89,57 +126,56 @@ git push origin PS01/grupoXX
 
 ### Paso 6: Crear un Pull Request
 
-1. Vayan a la pagina del repositorio en GitHub
-2. Click en **"Compare & pull request"** (aparece automaticamente despues del push)
-3. Titulo: `PS01 GrupoXX — Entrega`
-4. En la descripcion, listen brevemente:
+1. Vayan a la página del repositorio en GitHub.
+2. Hagan clic en **"Compare & pull request"** (aparece automáticamente después del push).
+3. Título: `PS01 GrupoXX — Entrega`.
+4. En la descripción, incluyan:
    - Integrantes del grupo
-   - Pais asignado para la calibracion
-   - Lenguaje de programacion usado
-5. **No mergeen el PR ustedes mismos.** Los TAs lo revisaremos.
+   - País asignado para la calibración
+5. **No fusionen el PR ustedes mismos.** Los encargados de práctica lo revisaremos.
 
 ---
 
-## 3. Fecha limite
+## 5. Fecha límite
 
 | | Fecha | Hora |
 |---|---|---|
-| **Entrega final** | **Sabado 12 de abril de 2026** | **23:59 (hora de Lima, UTC-5)** |
+| **Entrega final** | **Sábado 12 de abril de 2026** | **23:59 (hora de Lima, UTC−5)** |
 
-- El timestamp del ultimo commit en su rama antes de las 23:59 es lo que cuenta.
-- Commits posteriores a la fecha limite **no seran considerados** salvo autorizacion explicita de los TAs.
-- Si tienen problemas tecnicos con git, envien un correo **antes** de la fecha limite con evidencia (capturas de pantalla).
-
----
-
-## 4. Lenguajes de programacion permitidos
-
-Para todas las preguntas que requieran codigo (replicacion, simulacion, graficos, calibracion), **solo se aceptan** los siguientes lenguajes:
-
-| Lenguaje | Formatos aceptados |
-|----------|-------------------|
-| **Python** | `.ipynb` (Jupyter Notebook) o `.py` |
-| **R** | `.Rmd` (R Markdown) o `.R` |
-| **MATLAB** | `.m` o `.mlx` (Live Script) |
-
-- Pueden usar el lenguaje que prefieran. No es necesario que todo el grupo use el mismo.
-- El codigo debe ser **reproducible**: cualquier TA debe poder ejecutarlo y obtener los mismos resultados. Incluyan las instrucciones de instalacion de paquetes si usan librerias no estandar.
-- En Python: `pip install wbgapi statsmodels pandas matplotlib`
-- En R: `install.packages(c("WDI", "mFilter", "ggplot2"))`
+- El *timestamp* del último commit en su rama antes de las 23:59 es lo que cuenta.
+- Los commits posteriores a la fecha límite **no serán considerados**, salvo autorización explícita de los encargados de práctica.
+- Si tienen problemas técnicos con Git, envíen un correo **antes** de la fecha límite con evidencia (capturas de pantalla).
 
 ---
 
-## 5. Politica de uso de Inteligencia Artificial
+## 6. Lenguaje de programación
 
-**El uso de IA esta permitido**, bajo las siguientes condiciones:
+Para todas las preguntas que requieran código — replicación, simulación, gráficos y calibración —, **solo se acepta Python** en los siguientes formatos:
 
-### 5.1 Declaracion de transparencia (obligatoria)
+| Formato | Descripción |
+|---------|-------------|
+| `.ipynb` | Jupyter Notebook (recomendado) |
+| `.py` | Script de Python |
+
+El código debe ser **reproducible**: cualquier encargado de práctica debe poder ejecutarlo y obtener los mismos resultados. Para ello, incluyan al inicio de cada notebook la instalación de los paquetes necesarios:
+
+```python
+!pip install wbgapi statsmodels pandas matplotlib -q
+```
+
+---
+
+## 7. Política de uso de Inteligencia Artificial
+
+**El uso de IA está permitido**, bajo las siguientes condiciones.
+
+### 7.1 Declaración de transparencia (obligatoria)
 
 Cada grupo debe incluir un archivo `declaracion_IA.pdf` con el siguiente formato:
 
 ---
 
-> **DECLARACION DE USO DE INTELIGENCIA ARTIFICIAL**
+> **DECLARACIÓN DE USO DE INTELIGENCIA ARTIFICIAL**
 >
 > **Grupo:** XX
 >
@@ -147,95 +183,100 @@ Cada grupo debe incluir un archivo `declaracion_IA.pdf` con el siguiente formato
 >
 > **Herramientas de IA utilizadas:**
 >
-> | Herramienta | Version | Preguntas en las que se uso |
-> |------------|---------|----------------------------|
-> | ChatGPT | GPT-4o | (c), (f), (k) |
-> | Claude | Sonnet 4 | (a) codigo de descarga |
+> | Herramienta | Versión | Ítems en los que se usó |
+> |-------------|---------|--------------------------|
+> | ChatGPT | GPT-4o | (c), (f) |
+> | Claude | Sonnet 4 | código ítem (38) |
 > | GitHub Copilot | — | autocompletado general |
 >
 > **Prompts clave utilizados:**
 >
-> - Pregunta (c): *"Explica por que la cuenta corriente de China no es contraciclica a pesar de ser un pais emergente"*
-> - Pregunta (f): *"Escribe una funcion en Python que simule una economia pequena y abierta con shocks AR(1)"*
-> - Pregunta (k): *"Busca la tabla de calibracion de Neumeyer y Perri (2005) para Corea y resume los parametros"*
+> - Ítem (c): *"Explica por qué la cuenta corriente de China no es contracíclica a pesar de ser un país emergente."*
+> - Ítem (38): *"Escribe una función en Python que descargue datos del Banco Mundial con wbgapi."*
 >
 > **Declaramos que:**
-> 1. Las respuestas finales reflejan nuestra comprension del material, no una copia literal de outputs de IA.
-> 2. Hemos verificado la exactitud de cualquier informacion proporcionada por IA.
-> 3. El analisis economico y las interpretaciones son de nuestra autoria.
+> 1. Las respuestas finales reflejan nuestra comprensión del material, no una copia literal de los resultados de IA.
+> 2. Hemos verificado la exactitud de cualquier información proporcionada por IA.
+> 3. El análisis económico y las interpretaciones son de nuestra autoría.
 
 ---
 
-Si **no usaron IA**, igualmente incluyan el archivo con la declaracion: *"No se utilizo ninguna herramienta de IA para esta entrega."*
+Si **no utilizaron IA**, igualmente incluyan el archivo con la declaración: *"No se utilizó ninguna herramienta de IA para esta entrega."*
 
-### 5.2 ¿Qué está bien y qué no?
+### 7.2 ¿Qué está permitido y qué no?
 
 | Permitido | No permitido |
 |-----------|-------------|
-| Usar IA para depurar errores de codigo | Copiar respuestas de IA sin entenderlas |
-| Pedir explicaciones de conceptos teoricos | Pegar el enunciado completo y entregar el output |
-| Generar borradores de codigo que luego adaptan | Presentar texto generado por IA como propio sin editar |
-| Buscar papers y fuentes con IA | Inventar citas o datos que no verificaron |
+| Usar IA para depurar errores de código | Copiar respuestas de IA sin comprenderlas |
+| Pedir explicaciones de conceptos teóricos | Pegar el enunciado completo y entregar el resultado |
+| Generar borradores de código que luego adaptan | Presentar texto generado por IA como propio sin editar |
+| Buscar artículos y fuentes con IA | Inventar citas o datos que no verificaron |
 
-**Criterio general:** La IA es una herramienta, no un sustituto. Si en la sustentacion (video o Q&A) no pueden explicar lo que entregaron, se asumira que no es trabajo propio.
-
----
-
-## 6. Politica de colaboracion entre grupos
-
-**La cooperacion entre grupos esta permitida**, con las siguientes reglas:
-
-- Pueden discutir enfoques, compartir tips de codigo, y resolver dudas entre grupos.
-- **Las respuestas escritas no pueden ser identicas.** Si dos grupos entregan textos sustancialmente iguales (verificado con herramientas de similitud), ambos recibiran penalizacion.
-- El codigo puede ser similar (todos usan la misma funcion base), pero la interpretacion y discusion deben ser propias.
-- Si un grupo les ayudo significativamente, **agradezcancerlo en su README.md**.
+**Criterio general:** La IA es una herramienta, no un sustituto. Si durante la sustentación no pueden explicar lo que entregaron, se asumirá que no es trabajo propio.
 
 ---
 
-## 7. Video de sustentacion
+## 8. Política de colaboración entre grupos
 
-- **Duracion maxima:** 10 minutos.
-- **Formato:** MP4 (si excede 100 MB, subanlo a Google Drive/YouTube no listado y peguen el link en su README.md).
-- **Contenido sugerido:**
-  1. Breve presentacion del grupo (20 seg)
-  2. Hallazgo principales de cada una de las cinco partes del PS (5 min)
-  3. Resultado de simulacion que les parecio interesante (1 min)
-  4. Calibracion de su pais elegido: (2 min)
-  5. Dónde la teoría falla y por qué (2 min)
-- No es necesario que hablen todos los integrantes, pero todos deben estar presentes.
+**La cooperación entre grupos está permitida**, con las siguientes reglas:
+
+- Pueden discutir enfoques, compartir consejos de código y resolver dudas entre grupos.
+- **Las respuestas escritas no pueden ser idénticas.** Si dos grupos entregan textos sustancialmente iguales (verificado con herramientas de similitud), ambos recibirán penalización.
+- El código puede ser similar — todos usan la misma función base —, pero la interpretación y la discusión deben ser propias.
+- Si otro grupo los ayudó de forma significativa, **agradézcanlo en su `README.md`**.
 
 ---
 
-## 8. Sesion de Q&A
+## 9. Video de sustentación
 
-Se programara una sesion de preguntas y respuestas con los TAs antes de la fecha de entrega. La fecha y hora se confirmaran en funcion de la disponibilidad de los TAs y se comunicara por el canal oficial del curso.
+- **Duración máxima:** 10 minutos.
+- **Formato:** MP4. Si el archivo excede 100 MB, súbanlo a Google Drive o YouTube (no listado) y peguen el enlace en su `README.md`.
+- **Estructura sugerida** (los tiempos son orientativos, no estrictos):
 
-** Algunas ejemplos de dudas que pueden traer:
-- Interpretacion de resultados
-- Problemas tecnicos con el codigo o datos
-- Dudas sobre la calibracion con literatura
+| Segmento | Contenido | Tiempo sugerido |
+|----------|-----------|-----------------|
+| Presentación | Integrantes del grupo y país asignado | 30 seg |
+| Parte I | Ingreso permanente y matriz compañera: resultado que más les sorprendió | 1 min |
+| Parte II | IRF más interesante: transitoria, permanente o anticipada | 2 min |
+| Partes III y IV | Equilibrio mundial y *saving glut*: mecanismo central y resultado numérico | 2 min |
+| Parte V — Bloque A | Regularidad empírica que más se desvía de la teoría y por qué | 2 min |
+| Parte V — Bloque B | Calibración de su país: parámetro más difícil de ajustar | 1 min 30 seg |
+| Cierre | Dónde falla el modelo y qué fricción añadirían | 1 min |
 
----
-
-## 9. Checklist antes de entregar
-
-Antes de hacer su push final, verifiquen:
-
-- [ ] La carpeta se llama `PS01_GrupoXX/` (con el numero correcto)
-- [ ] El PDF tiene las respuestas a **todas** las preguntas (a)-(l)
-- [ ] El codigo es reproducible (otro TA puede correrlo sin modificaciones)
-- [ ] Los graficos estan incluidos en el PDF (no solo en el notebook)
-- [ ] La tabla maestra de 8 paises esta completa
-- [ ] La declaracion de IA esta incluida (aunque no hayan usado IA)
-- [ ] El video esta subido (o el link en README.md)
-- [ ] El README.md describe brevemente el contenido de cada archivo
-- [ ] No hay archivos innecesarios (checkpoints, caches, backups)
-- [ ] El PR esta creado con titulo y descripcion correctos
+- No es necesario que hablen todos los integrantes, pero todos deben estar presentes en el video.
 
 ---
 
-## 10. Contacto
+## 10. Sesión de preguntas y respuestas
 
-Para dudas sobre la entrega: contacten a los TAs por el canal oficial del curso.
+Se programará una sesión de preguntas y respuestas con los encargados de práctica antes de la fecha de entrega. La fecha y hora se comunicarán por el canal oficial del curso.
 
-Para problemas con Git: revisen la [guia oficial de GitHub](https://docs.github.com/en/get-started/quickstart) o pregunten en la sesion de Q&A.
+**Ejemplos de dudas que pueden traer:**
+- Interpretación de resultados empíricos o teóricos
+- Problemas técnicos con el código o los datos
+- Dudas sobre la calibración con la literatura
+
+---
+
+## 11. Lista de verificación antes de entregar
+
+Antes de hacer su *push* final, verifiquen cada punto:
+
+- [ ] La carpeta se llama `PS01_GrupoXX/` con el número correcto
+- [ ] El PDF contiene las respuestas a **todos** los ítems de las Partes I–V
+- [ ] El código está en Python (`.ipynb` o `.py`) y es reproducible
+- [ ] Los gráficos están incluidos en el PDF, no solo en el notebook
+- [ ] La tabla maestra de los ocho países está completa (Bloque A)
+- [ ] La declaración de IA está incluida (aunque no hayan usado IA)
+- [ ] El video está subido o el enlace figura en el `README.md`
+- [ ] El `README.md` describe brevemente el contenido de cada archivo
+- [ ] No hay archivos innecesarios (*checkpoints*, cachés, copias de seguridad)
+- [ ] El Pull Request está creado con título y descripción correctos
+
+---
+
+## 12. Contacto
+
+Para dudas sobre la entrega, contacten a los encargados de práctica por el canal oficial del curso.
+
+Para problemas con Git, revisen la [guía oficial de GitHub](https://docs.github.com/en/get-started/quickstart) o consulten en la sesión de preguntas y respuestas.
