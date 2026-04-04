@@ -36,7 +36,7 @@ PS01_GrupoXX/
 
 ---
 
-## 2. Como subir al repositorio
+## 2. Cómo subir al repositorio
 
 ### Paso 1: Clonar el repositorio (solo la primera vez)
 
