@@ -1,6 +1,8 @@
-# Instrucciones de Entrega — Practice Session 01
+# Instrucciones de entrega del PS 01
 
 ## Macroeconomia Internacional | Semestre 2026-I
+## Instructor: Carlos Montoro
+## EP: Alejandro Ventura & Fernando Condori
 
 ---
 
