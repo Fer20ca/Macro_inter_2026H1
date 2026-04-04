@@ -197,11 +197,11 @@ Si **no usaron IA**, igualmente incluyan el archivo con la declaracion: *"No se 
 - **Duracion maxima:** 10 minutos.
 - **Formato:** MP4 (si excede 100 MB, subanlo a Google Drive/YouTube no listado y peguen el link en su README.md).
 - **Contenido sugerido:**
-  1. Breve presentacion del grupo (30 seg)
-  2. Hallazgo principal de la tabla maestra (2 min)
-  3. Un resultado de simulacion que les parecio interesante (2 min)
-  4. Calibracion de su pais: que funciono, que no (3 min)
-  5. Conclusion: donde la teoria falla y por que (2 min)
+  1. Breve presentacion del grupo (20 seg)
+  2. Hallazgo principales de cada una de las cinco partes del PS (5 min)
+  3. Resultado de simulacion que les parecio interesante (1 min)
+  4. Calibracion de su pais elegido: (2 min)
+  5. Dónde la teoría falla y por qué (2 min)
 - No es necesario que hablen todos los integrantes, pero todos deben estar presentes.
 
 ---
