@@ -210,7 +210,7 @@ Si **no usaron IA**, igualmente incluyan el archivo con la declaracion: *"No se 
 
 Se programara una sesion de preguntas y respuestas con los TAs antes de la fecha de entrega. La fecha y hora se confirmaran en funcion de la disponibilidad de los TAs y se comunicara por el canal oficial del curso.
 
-**Formato:** Virtual (Zoom/Meet), abierta a todos los grupos. Pueden traer preguntas sobre:
+** Algunas ejemplos de dudas que pueden traer:
 - Interpretacion de resultados
 - Problemas tecnicos con el codigo o datos
 - Dudas sobre la calibracion con literatura
