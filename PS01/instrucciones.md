@@ -265,7 +265,7 @@ Antes de hacer su *push* final, verifiquen cada punto:
 - [ ] El PDF contiene las respuestas a **todos** los ítems de las Partes I–V
 - [ ] El código está en Python (`.ipynb` o `.py`) y es reproducible
 - [ ] Los gráficos están incluidos en el PDF, no solo en el notebook
-- [ ] La tabla maestra de los ocho países está completa (Bloque A)
+- [ ] La tabla maestra de los siete países está completa (Bloque A)
 - [ ] La declaración de IA está incluida (aunque no hayan usado IA)
 - [ ] El video está subido o el enlace figura en el `README.md`
 - [ ] El `README.md` describe brevemente el contenido de cada archivo
