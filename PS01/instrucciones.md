@@ -43,7 +43,7 @@ El *problem set* tiene cuatro entregables. Cada uno tiene requisitos específico
 
 El archivo `PS01_GrupoXX.pdf` debe contener la solución de **todos y cada uno de los ítems** de las Partes I–V, en orden. Para que sea evaluable, tenga en cuenta lo siguiente:
 
-- **Orden:** las respuestas deben seguir estrictamente la numeración del enunciado (ítem 1, ítem 2, ..., ítem 48). No omita ningún ítem ni cambie el orden.
+- **Orden:** las respuestas deben seguir estrictamente la numeración del enunciado (ítem 1, ítem 2, ..., ítem 26). No omita ningún ítem ni cambie el orden.
 - **Claridad:** cada respuesta debe comenzar indicando el número de ítem al que corresponde. Las derivaciones matemáticas deben presentarse paso a paso, con cada paso justificado. Las respuestas de interpretación deben ser párrafos completos, no listas de palabras sueltas.
 - **Gráficos:** todos los gráficos generados en código deben estar embebidos en el PDF, con título, etiquetas en los ejes y leyenda cuando corresponda. No se aceptan referencias a archivos externos.
 - **Formato:** únicamente se acepta **PDF**. No se aceptan archivos Word, LaTeX sin compilar ni ningún otro formato.
@@ -185,14 +185,13 @@ Cada grupo debe incluir un archivo `declaracion_IA.pdf` con el siguiente formato
 >
 > | Herramienta | Versión | Ítems en los que se usó |
 > |-------------|---------|--------------------------|
-> | ChatGPT | GPT-4o | (c), (f) |
-> | Claude | Sonnet 4 | código ítem (38) |
+> | ChatGPT | GPT-4o | ítem (20) |
+> | Claude | Sonnet 4 | ítem (4) |
 > | GitHub Copilot | — | autocompletado general |
 >
 > **Prompts clave utilizados:**
 >
-> - Ítem (c): *"Explica por qué la cuenta corriente de China no es contracíclica a pesar de ser un país emergente."*
-> - Ítem (38): *"Escribe una función en Python que descargue datos del Banco Mundial con wbgapi."*
+> - Ítem (22): *"Escribe una función en Python que descargue datos del Banco Mundial con wbgapi."*
 >
 > **Declaramos que:**
 > 1. Las respuestas finales reflejan nuestra comprensión del material, no una copia literal de los resultados de IA.
